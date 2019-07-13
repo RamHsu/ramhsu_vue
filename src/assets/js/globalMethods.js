@@ -1,6 +1,120 @@
 export default {
+    $httpRequestList: {}, // request列表
+
     /**
-     * @param element  dom
+     *  统一请求方法
+     *  @param url        -   请求地址
+     *  @param method     -   get/post
+     *  @param options    -   请求对应的参数
+     *      {
+     *          onlyOneFlag         -   是否只允许捅一个接口只存在一个请求的标志
+     *          data                -   非get请求时传入的参数
+     *          params              -   get请求时传入的参数对象
+     *          successCallback     -   请求时200时的回调函数
+     *          errorCallback       -   非200时的回调
+     *          finallyCallback     -   请求结束后执行的回调
+     *      }
+     * */
+    requestServer(url, method, options = {}) {
+        if (!url || !method) return false;
+        var self = this;
+        self
+            .axios({
+                url: url,
+                responseType: options.responseType || "application/json",
+                headers: { "Content-Type": options.contentType || "application/json;charset=UTF-8" },
+                method: method,
+                data: options.data,
+                params: options.params,
+                paramsSerializer: params => qs.stringify(params, { indices: false }),
+                cancelToken: new self.axios.CancelToken(function executor(c) {
+                    if (options.onlyOneFlag) {
+                        var uniqueKey = url + method.toLowerCase();
+                        if (self.$httpRequestList[uniqueKey] && self.$httpRequestList[uniqueKey].length) {
+                            self.$httpRequestList[uniqueKey].forEach(prevToken => {
+                                prevToken({
+                                    type: "cancel",
+                                    message: "cancel请求"
+                                });
+                            });
+                        }
+                        self.$httpRequestList[uniqueKey] = [];
+                        self.$httpRequestList[uniqueKey].push(c);
+                    }
+                })
+            })
+            .then(function(response) {
+                if (response.status === 200) {
+                    typeof options.successCallback === "function" && options.successCallback(response.data);
+                } else {
+                    typeof options.errorCallback === "function" && options.errorCallback(response.data);
+                }
+            })
+            .catch(function(error) {
+                console.log(error);
+                if (error.message && error.message.type === "cancel") {
+                    console.log("cancel request")
+                } else {
+                    typeof options.errorCallback === "function" && options.errorCallback();
+                }
+            })
+            .finally(function() {
+                typeof options.finallyCallback === "function" && options.finallyCallback();
+            });
+    },
+
+    /**
+     *  取消对应的地址的请求
+     *  @param url 请求地址
+     * */
+    cancelRequestServer(url) {
+        if (!url) return false;
+        var self = this;
+        if (self.$httpRequestList[url] && self.$httpRequestList[url].length) {
+            self.$httpRequestList[url].forEach(function(prevToken) {
+                prevToken({
+                    type: "cancel",
+                    message: "cancel request server"
+                });
+            });
+        }
+    },
+
+    /**
+     * 阻止冒泡行为
+     * @param event
+     */
+    stopBubble(event) {
+        // 如果提供了事件对象，则这是一个非IE浏览器，因此它支持W3C的stopPropagation()方法
+        if (event && event.stopPropagation) event.stopPropagation();
+        // 否则，我们需要使用IE的方式来取消事件冒泡
+        else window.event.cancelBubble = true;
+    },
+
+    /**
+     * 阻止默认行为
+     * @param event
+     */
+    stopDefault(event) {
+        // 阻止默认浏览器动作(W3C)
+        if (event && event.preventDefault) e.preventDefault();
+        // IE中阻止函数器默认动作的方式
+        else window.event.returnValue = false;
+        return false;
+    },
+
+    /**
+     * 阻止冒泡行为并阻止默认行为
+     * @param event
+     */
+    cancelHandler(event) {
+        this.stopBubble(event);
+        this.topDefault(event);
+    },
+
+    /**
+     * 获取DOM元素的样式
+     * @param element dom
      * @param attr css属性
      */
     getStyle(element, attr) {
@@ -53,7 +167,7 @@ export default {
         if (curLang.startsWith("zh-")) return "chinese";
         else return "english";
     },
-    
+
     /**
      * @param start  开始日期（日期 / 日期字符串）
      * @param end  结束日期（日期 / 日期字符串）
@@ -61,10 +175,7 @@ export default {
      */
     getDaysDiff(start, end) {
         // 86400000: 1天的时间 = 24小时 x 60分钟 x 60秒 x 1000毫秒
-        return parseInt(
-            Math.abs(new Date(start).getTime() - new Date(end).getTime()) /
-                86400000
-        );
+        return parseInt(Math.abs(new Date(start).getTime() - new Date(end).getTime()) / 86400000);
     },
 
     /**

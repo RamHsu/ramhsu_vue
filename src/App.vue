@@ -1,23 +1,33 @@
 <template>
-  <div id="app">
-    <img src="./assets/logo.png">
-    <router-view/>
-  </div>
+    <div id="app">
+        <router-view />
+    </div>
 </template>
 
 <script>
 export default {
-  name: 'App'
-}
+    name: "App",
+    created() {
+        var self = this;
+        window.onload = function() {
+            console.log("windLoad");
+            self.$EventBus.$emit("windLoad");
+        };
+        window.onresize = function() {
+            console.log("windowResize");
+            self.$EventBus.$emit("windowResize");
+        };
+        document.body.onclick = function(event) {
+            console.log("bodyClick");
+            self.$EventBus.$emit("bodyClick", event);
+        };
+    }
+};
 </script>
 
-<style>
-#app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
+<style scoped>
+    #app {
+        height: 100%;
+        overflow: hidden;
+    }
 </style>
