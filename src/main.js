@@ -3,7 +3,7 @@
 import Vue from "vue";
 import App from "./App";
 import router from "./router";
-import store from './store'
+import store from "./store";
 import i18n from "./i18n";
 
 // 原型扩展
@@ -14,23 +14,17 @@ import "./assets/js/extendString.js";
 
 // 全局样式
 import "./assets/css/global.css";
-import "./assets/css/border.css";
-import "./assets/css/chart.icon.css";
+import "./assets/css/font-awesome.css";
 
-// 挂载全局公共方法
-import globalMethods from "./assets/js/globalMethods.js";
-Object.keys(globalMethods).forEach(key => {
-    Vue.prototype[key] = globalMethods[key];
-});
+// 使用Axioss (ajax)
+import VueAxios from "vue-axios";
+import axios from "axios";
+Vue.use(VueAxios, axios);
 
-/* 
-    使用EventBus实现全局通信
-    windLoad: window load事件
-    windowResize: window resize事件
-    bodyClick: body click事件
-*/
-Vue.prototype.$EventBus = new Vue();
+import global from "@/assets/js/global";
+Vue.use(global, { Vue }); // 注入公共内容
 
+// 设置为 false 以阻止 vue 在启动时生成生产提示
 Vue.config.productionTip = false;
 
 // eslint-disable no-new

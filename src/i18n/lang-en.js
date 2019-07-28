@@ -13,8 +13,6 @@ module.exports = {
         share: "Share",
         delete: "Delete",
         config: "Config",
-        reset: "Reset",
-        save_pdf: "Save As PDF",
-        save_png: "Save As PNG",
+        reset: "Reset"
     }
 };

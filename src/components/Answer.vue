@@ -1,6 +1,6 @@
 <template>
     <div>
-        <p>Answer {{ $t("") }}</p>
+        <p>Answer</p>
     </div>
 </template>
 
@@ -11,18 +11,6 @@ export default {
         return {
             timer: null
         };
-    },
-    created() {
-        let self = this;
-        self.$EventBus.$on("windLoad", function() {
-            console.log("--- windLoad ---");
-        });
-        self.$EventBus.$on("windowResize", function() {
-            console.log("--- windowResize ---");
-        });
-        self.$EventBus.$on("bodyClick", function(event) {
-            console.log("--- bodyClick ---", event);
-        });
     },
     mounted() {
         var self = this;
